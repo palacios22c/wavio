@@ -71,8 +71,8 @@ def _wav2array(nchannels, sampwidth, data):
     """data must be the string containing the bytes from the wav file."""
     num_samples, remainder = divmod(len(data), sampwidth * nchannels)
     if remainder > 0:
-        raise ValueError('The length of data is not a multiple of '
-                         'sampwidth * num_channels.')
+        raise ValueError(f'The length of data ({len(data)}) is not a multiple '
+                         'of sampwidth * num_channels.')
     if sampwidth > 4:
         raise ValueError("sampwidth must not be greater than 4.")
 
@@ -85,7 +85,7 @@ def _wav2array(nchannels, sampwidth, data):
     else:
         # 8 bit samples are stored as unsigned ints; others as signed ints.
         dt_char = 'u' if sampwidth == 1 else 'i'
-        a = _np.frombuffer(data, dtype='<%s%d' % (dt_char, sampwidth))
+        a = _np.frombuffer(data, dtype=f'<{dt_char}{sampwidth}')
         result = a.reshape(-1, nchannels)
     return result
 
@@ -150,9 +150,10 @@ class Wav:
     sampwidth: int
 
     def __repr__(self):
-        s = ("Wav(data.shape=%s, data.dtype=%s, rate=%r, sampwidth=%r)" %
-             (self.data.shape, self.data.dtype, self.rate, self.sampwidth))
-        return s
+        return (f"Wav(data.shape={self.data.shape}, "
+                f"data.dtype={self.data.dtype}, "
+                f"rate={self.rate}, "
+                f"sampwidth={self.sampwidth})")
 
 
 def read(file: BinaryIO | str) -> Wav:
@@ -212,8 +213,7 @@ def read(file: BinaryIO | str) -> Wav:
         nframes = wav.getnframes()
         data = wav.readframes(nframes)
     array = _wav2array(nchannels, sampwidth, data)
-    w = Wav(data=array, rate=rate, sampwidth=sampwidth)
-    return w
+    return Wav(data=array, rate=rate, sampwidth=sampwidth)
 
 
 _sampwidth_dtypes = {1: _np.uint8,
@@ -262,8 +262,7 @@ def _float_to_integer(x, sampwidth, scale=None, clip="warn"):
             raise ClippedDataError(msg)
 
     y = midpoint + _round_with_half_towards_zero(x/scale*c)
-    y = _np.clip(y, int_min, int_max).astype(_sampwidth_dtypes[sampwidth])
-    return y
+    return _np.clip(y, int_min, int_max).astype(_sampwidth_dtypes[sampwidth])
 
 
 def _round_with_half_towards_zero(x):

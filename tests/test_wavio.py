@@ -1,10 +1,10 @@
-
 import pytest
 import tempfile
 import os
 import wave
 import numpy as np
 import wavio
+
 
 int32le = np.dtype('<i4')
 int16le = np.dtype('<i2')
@@ -36,7 +36,7 @@ def check_wavio_read(filename, rate, sampwidth, dtype, shape, data):
     np.testing.assert_equal(w.data, data, "data does not match")
 
 
-class TestWavio():
+class TestWavio:
 
     def test0(self):
         filename = 'test1data.wav'
